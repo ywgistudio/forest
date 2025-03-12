@@ -246,9 +246,9 @@ export function NavigationBar({
           px="5px"
           ml="16px"
           as="a"
-          href="https://twitter.com/transmissions11/status/1640775967856803840"
+          href="https://ywgi.org/"
         >
-          About
+          YWGI
         </Button>
       </Row>
     </Row>

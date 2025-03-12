@@ -10,7 +10,6 @@ export function BigButton({
   return (
     <Tooltip label={tooltip}>
       <Button
-        color="white"
         bg={color}
         _hover={{
           bg: adjustColor(color, -20),

@@ -19,20 +19,51 @@ html, body {
 }
 
 button, 
-.chakra-button,
-.chakra-menu__menuitem {
+.chakra-button {
   color: #EEEEEE !important;
+}
+
+/* Explicitly set black text for BigButton */
+.chakra-tooltip > .chakra-button,
+[role="group"] > .chakra-button,
+[id="promptButtons"] .chakra-button,
+[id*="prompt"] .chakra-button {
+  color: #000000 !important;
+  font-weight: bold !important;
+  text-shadow: none !important;
 }
 
 .chakra-menu__menulist,
 .chakra-modal__content {
-  background-color: #222222 !important;
-  color: #EEEEEE !important;
-  border-color: #333333 !important;
+  background-color: #FFFFFF !important;
+  color: #000000 !important;
+  border-color: #DDDDDD !important;
+}
+
+.chakra-menu__menuitem {
+  color: #000000 !important;
+  background-color: transparent !important;
+}
+
+.chakra-menu__menuitem:hover {
+  background-color: transparent !important;
+}
+
+.chakra-menu__menuitem[aria-selected="true"],
+.chakra-menu__menuitem:active,
+.chakra-menu__menuitem:focus {
+  background-color: transparent !important;
+  color: #000000 !important;
+}
+
+.chakra-menu__menuitem-option,
+.chakra-menu__command {
+  color: #000000 !important;
 }
 
 .chakra-menu__group__title {
-  color: #AAAAAA !important;
+  color: #000000 !important;
+  font-weight: bold !important;
 }
 
 .selected {
