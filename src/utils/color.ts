@@ -16,25 +16,25 @@ export function adjustColor(color: string, amount: number) {
 export function getFluxNodeTypeColor(fluxNodeType: FluxNodeType) {
   switch (fluxNodeType) {
     case FluxNodeType.User:
-      return "#EEEEEE";
+      return "#222222";  // Very dark gray for user messages
     case FluxNodeType.GPT:
-      return "#d9f3d6";
+      return "#111111";  // Almost black for AI responses
     case FluxNodeType.TweakedGPT:
-      return "#f7d0a1";
+      return "#181818";  // Dark gray for edited AI responses
     case FluxNodeType.System:
-      return "#C5E2F6";
+      return "#000000";  // Black for system messages
   }
 }
 
 export function getFluxNodeTypeDarkColor(fluxNodeType: FluxNodeType) {
   switch (fluxNodeType) {
     case FluxNodeType.User:
-      return "#A9ABAE";
+      return "#FFFFFF";  // White for user labels/borders
     case FluxNodeType.GPT:
-      return "#619F83";
+      return "#CCCCCC";  // Light gray for AI labels/borders
     case FluxNodeType.TweakedGPT:
-      return "#CB7937";
+      return "#AAAAAA";  // Medium gray for edited AI labels/borders
     case FluxNodeType.System:
-      return "#5F8AF7";
+      return "#888888";  // Darker gray for system labels/borders
   }
 }

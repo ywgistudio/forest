@@ -19,7 +19,7 @@ export const DEFAULT_SETTINGS: Settings = {
   temp: 1,
   n: 3,
   autoZoom: true,
-  model: "gpt-4o",
+  model: "anthropic/claude-3.7-sonnet",
   defaultPreamble: `You are a helpful assistant.`,
 };
 
@@ -38,10 +38,10 @@ export const MAX_HISTORY_SIZE = 256;
 
 export const OVERLAP_RANDOMNESS_MAX = 20;
 
-export const API_KEY_LOCAL_STORAGE_KEY = "FLUX_OPENAI_API_KEY";
-export const REACT_FLOW_LOCAL_STORAGE_KEY = "FLUX_REACT_FLOW_DATA";
-export const MODEL_SETTINGS_LOCAL_STORAGE_KEY = "FLUX_MODEL_SETTINGS";
-export const SAVED_CHAT_SIZE_LOCAL_STORAGE_KEY = "FLUX_SAVED_CHAT_SIZE";
+export const API_KEY_LOCAL_STORAGE_KEY = "FOREST_OPENROUTER_API_KEY";
+export const REACT_FLOW_LOCAL_STORAGE_KEY = "FOREST_REACT_FLOW_DATA";
+export const MODEL_SETTINGS_LOCAL_STORAGE_KEY = "FOREST_MODEL_SETTINGS";
+export const SAVED_CHAT_SIZE_LOCAL_STORAGE_KEY = "FOREST_SAVED_CHAT_SIZE";
 
 export const NEW_TREE_CONTENT_QUERY_PARAM = "newTreeWith";
 

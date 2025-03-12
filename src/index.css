@@ -1,5 +1,42 @@
+@font-face {
+  font-family: 'Antique Legacy';
+  src: url('/AntiqueLegacy-Regular.woff') format('woff'),
+       url('/AntiqueLegacy-Regular.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+html, body {
+  background-color: #000000 !important;
+  color: #EEEEEE !important;
+  font-family: 'Antique Legacy', serif;
+}
+
+/* Override Chakra UI components for dark theme */
+.chakra-ui-light {
+  background-color: #000000 !important;
+  color: #EEEEEE !important;
+}
+
+button, 
+.chakra-button,
+.chakra-menu__menuitem {
+  color: #EEEEEE !important;
+}
+
+.chakra-menu__menulist,
+.chakra-modal__content {
+  background-color: #222222 !important;
+  color: #EEEEEE !important;
+  border-color: #333333 !important;
+}
+
+.chakra-menu__group__title {
+  color: #AAAAAA !important;
+}
+
 .selected {
-  box-shadow: 0px 0px 0px 2px #e73324, 0px 0px 20px 2px #e73324 !important;
+  box-shadow: 0px 0px 0px 2px #CCCCCC, 0px 0px 20px 2px #AAAAAA !important;
 }
 
 .react-flow__node {
@@ -8,7 +45,22 @@
 }
 
 .react-flow__node:not(.selected):hover {
-  box-shadow: 0 0 0 0.5px #1a192b !important;
+  box-shadow: 0 0 0 0.5px #DDDDDD !important;
+}
+
+.react-flow__background {
+  background-color: #000000 !important;
+}
+
+.react-flow__controls {
+  background-color: #222222 !important;
+  border-color: #333333 !important;
+}
+
+.react-flow__controls button {
+  background-color: #222222 !important;
+  color: #EEEEEE !important;
+  border-color: #333333 !important;
 }
 
 /* Enable if you

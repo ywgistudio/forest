@@ -65,8 +65,9 @@ import { NavigationBar } from "./utils/NavigationBar";
 import { CheckCircleIcon } from "@chakra-ui/icons";
 import { Box, useDisclosure, Spinner, useToast } from "@chakra-ui/react";
 import mixpanel from "mixpanel-browser";
-import { CreateCompletionResponseChoicesInner, OpenAI } from "openai-streams";
+import { CreateCompletionResponseChoicesInner } from "openai-streams";
 import { Resizable } from "re-resizable";
+import { callOpenRouter, processChatStream, processCompletionsStream } from "../utils/openrouter";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useBeforeunload } from "react-beforeunload";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -85,7 +86,6 @@ import ReactFlow, {
   updateEdge,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import { yieldStream } from "yield-stream";
 
 function App() {
   const toast = useToast();
@@ -362,7 +362,8 @@ function App() {
     if (firstCompletionId === undefined) throw new Error("No first completion id!");
 
     (async () => {
-      const stream = await OpenAI(
+      // Request multiple streams
+      const streams = await callOpenRouter(
         "chat",
         {
           model,
@@ -370,116 +371,105 @@ function App() {
           temperature: temp,
           messages: messagesFromLineage(parentNodeLineage, settings),
         },
-        { apiKey: apiKey!, mode: "raw" }
+        apiKey!
       );
 
-      const DECODER = new TextDecoder();
-
-      const abortController = new AbortController();
-
-      for await (const chunk of yieldStream(stream, abortController)) {
-        if (abortController.signal.aborted) break;
-
+      // Set up abort controllers for each stream
+      const abortControllers = streams.map(() => new AbortController());
+      
+      // Process each stream in parallel
+      const processingPromises = streams.map(async (stream, streamIndex) => {
+        const abortController = abortControllers[streamIndex];
+        
         try {
-          const decoded = JSON.parse(DECODER.decode(chunk));
-
-          if (decoded.choices === undefined)
-            throw new Error(
-              "No choices in response. Decoded response: " + JSON.stringify(decoded)
-            );
-
-          const choice: CreateChatCompletionStreamResponseChoicesInner =
-            decoded.choices[0];
-
-          if (choice.index === undefined)
-            throw new Error(
-              "No index in choice. Decoded choice: " + JSON.stringify(choice)
-            );
-
-          const correspondingNodeId =
-            // If we re-used a node we have to pull it from children array.
-            overrideExistingIfPossible && choice.index < currentNodeChildren.length
-              ? currentNodeChildren[choice.index].id
-              : newNodes[newNodes.length - responses + choice.index].id;
-
-          // The ChatGPT API will start by returning a
-          // choice with only a role delta and no content.
-          if (choice.delta?.content) {
-            setNodes((newerNodes) => {
-              try {
-                return appendTextToFluxNodeAsGPT(newerNodes, {
-                  id: correspondingNodeId,
-                  text: choice.delta?.content ?? UNDEFINED_RESPONSE_STRING,
-                  streamId, // This will cause a throw if the streamId has changed.
-                });
-              } catch (e: any) {
-                // If the stream id does not match,
-                // it is stale and we should abort.
-                abortController.abort(e.message);
-
-                return newerNodes;
+          // Get the corresponding node ID for this stream
+          const correspondingNodeId = 
+            overrideExistingIfPossible && streamIndex < currentNodeChildren.length
+              ? currentNodeChildren[streamIndex].id
+              : newNodes[newNodes.length - responses + streamIndex].id;
+              
+          console.log(`Starting stream ${streamIndex} for node ${correspondingNodeId}`);
+          
+          // Process this stream
+          for await (const decoded of processChatStream(stream, abortController)) {
+            if (abortController.signal.aborted) break;
+            
+            try {
+              if (decoded.choices === undefined || decoded.choices.length === 0) {
+                console.error(`Stream ${streamIndex} got response with no choices:`, decoded);
+                continue;
               }
-            });
+              
+              // Get the first choice from this stream 
+              // (there should only be one since we made individual requests)
+              const choice = decoded.choices[0];
+              
+              // Update the node with the content
+              if (choice.delta?.content) {
+                setNodes((newerNodes) => {
+                  try {
+                    console.log(`Stream ${streamIndex}: Updating node ${correspondingNodeId} with content: ${choice.delta?.content}`);
+                    return appendTextToFluxNodeAsGPT(newerNodes, {
+                      id: correspondingNodeId,
+                      text: choice.delta?.content ?? UNDEFINED_RESPONSE_STRING,
+                      streamId, // This will cause a throw if the streamId has changed.
+                    });
+                  } catch (e: any) {
+                    // If the stream id does not match,
+                    // it is stale and we should abort.
+                    abortController.abort(e.message);
+                    return newerNodes;
+                  }
+                });
+              }
+              
+              // If this stream is done, mark the node as no longer animated
+              if (choice.finish_reason !== null) {
+                console.log(`Stream ${streamIndex} for node ${correspondingNodeId} completed`);
+                // Reset the stream id.
+                setNodes((nodes) =>
+                  setFluxNodeStreamId(nodes, { id: correspondingNodeId, streamId: undefined })
+                );
+
+                setEdges((edges) =>
+                  modifyFluxEdge(edges, {
+                    source: parentNode.id,
+                    target: correspondingNodeId,
+                    animated: false,
+                  })
+                );
+              }
+            } catch (err) {
+              console.error(`Error processing stream ${streamIndex}:`, err);
+            }
           }
-
-          // We cannot return within the loop, and we do
-          // not want to execute the code below, so we break.
-          if (abortController.signal.aborted) break;
-
-          // If the choice has a finish reason, then it's the final
-          // choice and we can mark it as no longer animated right now.
-          if (choice.finish_reason !== null) {
-            // Reset the stream id.
-            setNodes((nodes) =>
-              setFluxNodeStreamId(nodes, { id: correspondingNodeId, streamId: undefined })
-            );
-
-            setEdges((edges) =>
-              modifyFluxEdge(edges, {
-                source: parentNode.id,
-                target: correspondingNodeId,
-                animated: false,
-              })
-            );
-          }
-        } catch (err) {
-          console.error(err);
+          
+        } catch (error) {
+          console.error(`Error in stream ${streamIndex}:`, error);
+          // Don't let one stream failure stop the others
         }
+      });
+      
+      // Wait for all streams to complete
+      await Promise.all(processingPromises).catch(err => {
+        console.error("Error processing multiple streams:", err);
+      });
+    })().catch((err) => {
+      // Remove OpenAI-specific error message references
+      let errorMessage = err.toString();
+      if (errorMessage.includes("You can find your API key at https://platform.openai.com/account/api-keys")) {
+        errorMessage = errorMessage.replace(
+          "You can find your API key at https://platform.openai.com/account/api-keys.", 
+          "Please check your OpenRouter API key at https://openrouter.ai/keys."
+        );
       }
-
-      // If the stream wasn't aborted or was aborted due to a cancelation.
-      if (
-        !abortController.signal.aborted ||
-        abortController.signal.reason === STREAM_CANCELED_ERROR_MESSAGE
-      ) {
-        // Mark all the edges as no longer animated.
-        for (let i = 0; i < responses; i++) {
-          const correspondingNodeId =
-            overrideExistingIfPossible && i < currentNodeChildren.length
-              ? currentNodeChildren[i].id
-              : newNodes[newNodes.length - responses + i].id;
-
-          // Reset the stream id.
-          setNodes((nodes) =>
-            setFluxNodeStreamId(nodes, { id: correspondingNodeId, streamId: undefined })
-          );
-
-          setEdges((edges) =>
-            modifyFluxEdge(edges, {
-              source: parentNode.id,
-              target: correspondingNodeId,
-              animated: false,
-            })
-          );
-        }
-      }
-    })().catch((err) =>
+      
       toast({
-        title: err.toString(),
+        title: errorMessage,
         status: "error",
         ...TOAST_CONFIG,
-      })
-    );
+      });
+    });
 
     setNodes(markOnlyNodeAsSelected(newNodes, firstCompletionId!));
 
@@ -543,28 +533,27 @@ function App() {
     (async () => {
       // TODO: Stop sequences for user/assistant/etc?
       // TODO: Select between instruction and auto raw base models?
-      const stream = await OpenAI(
+      const streams = await callOpenRouter(
         "completions",
         {
           // TODO: Allow customizing.
-          model: "text-davinci-003",
+          model: settings.model,
           temperature: temp,
           prompt: promptFromLineage(lineage, settings),
           max_tokens: 250,
           stop: ["\n\n", "assistant:", "user:"],
         },
-        { apiKey: apiKey!, mode: "raw" }
+        apiKey!
       );
-
-      const DECODER = new TextDecoder();
-
+      
+      // We should only get one stream since n=1 by default for completeNextWords
+      const stream = streams[0];
       const abortController = new AbortController();
 
-      for await (const chunk of yieldStream(stream, abortController)) {
+      for await (const decoded of processCompletionsStream(stream, abortController)) {
         if (abortController.signal.aborted) break;
 
         try {
-          const decoded = JSON.parse(DECODER.decode(chunk));
 
           if (decoded.choices === undefined)
             throw new Error(
@@ -603,7 +592,22 @@ function App() {
           setFluxNodeStreamId(nodes, { id: selectedNodeId, streamId: undefined })
         );
       }
-    })().catch((err) => console.error(err));
+    })().catch((err) => {
+      // Remove OpenAI-specific error message references
+      let errorMessage = err.toString();
+      if (errorMessage.includes("You can find your API key at https://platform.openai.com/account/api-keys")) {
+        errorMessage = errorMessage.replace(
+          "You can find your API key at https://platform.openai.com/account/api-keys.", 
+          "Please check your OpenRouter API key at https://openrouter.ai/keys."
+        );
+      }
+      
+      toast({
+        title: errorMessage,
+        status: "error",
+        ...TOAST_CONFIG,
+      });
+    });
 
     if (MIXPANEL_TOKEN) mixpanel.track("Completed next words");
   };

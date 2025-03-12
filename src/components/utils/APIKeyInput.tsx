@@ -12,10 +12,10 @@ export function APIKeyInput({
   return (
     <LabeledPasswordInputWithLink
       width="80%"
-      label="OpenAI API Key"
+      label="OpenRouter API Key"
       linkLabel="Get a key"
-      placeholder="sk-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-      link="https://platform.openai.com/account/api-keys"
+      placeholder="sk-or-v1-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+      link="https://openrouter.ai/keys"
       value={apiKey ?? ""}
       setValue={setApiKey}
       {...others}

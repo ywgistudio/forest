@@ -269,15 +269,14 @@ export function Prompt({
           height="100%"
           fontSize="lg"
         >
-          {promptNodeType === FluxNodeType.User ? "Generate" : "Compose"}
-          <Text fontWeight="extrabold">
-            &nbsp;
-            {promptNodeType === FluxNodeType.User
-              ? displayNameFromFluxNodeType(FluxNodeType.GPT, isGPT4)
-              : displayNameFromFluxNodeType(FluxNodeType.User, isGPT4)}
-            &nbsp;
-          </Text>
-          response
+          {promptNodeType === FluxNodeType.User ? "Generate Response" : "Compose"}
+          {promptNodeType !== FluxNodeType.User && (
+            <Text fontWeight="extrabold">
+              &nbsp;
+              {displayNameFromFluxNodeType(FluxNodeType.User)}
+              &nbsp;response
+            </Text>
+          )}
         </BigButton>
       </Row>
 
