@@ -1,148 +1,20 @@
-@font-face {
-  font-family: 'Antique Legacy';
-  src: url('/AntiqueLegacy-Regular.woff') format('woff'),
-       url('/AntiqueLegacy-Regular.otf') format('opentype');
-  font-weight: normal;
-  font-style: normal;
-}
+/* 
+This file is being phased out as we move to the Chakra UI theme system.
+Only keeping styles that can't be easily migrated yet.
+*/
 
-html, body {
-  background-color: #000000 !important;
-  color: #EEEEEE !important;
-  font-family: 'Antique Legacy', serif;
-}
-
-/* Override Chakra UI components for dark theme */
-.chakra-ui-light {
-  background-color: #000000 !important;
-  color: #EEEEEE !important;
-}
-
-button, 
-.chakra-button {
-  color: #EEEEEE !important;
-}
-
-/* Explicitly set black text for BigButton */
-.chakra-tooltip > .chakra-button,
-[role="group"] > .chakra-button,
-[id="promptButtons"] .chakra-button,
-[id*="prompt"] .chakra-button {
-  color: #000000 !important;
-  font-weight: bold !important;
-  text-shadow: none !important;
-}
-
-.chakra-menu__menulist,
-.chakra-modal__content {
-  background-color: #FFFFFF !important;
-  color: #000000 !important;
-  border-color: #DDDDDD !important;
-}
-
-.chakra-menu__menuitem {
-  color: #000000 !important;
-  background-color: transparent !important;
-}
-
-.chakra-menu__menuitem:hover {
-  background-color: transparent !important;
-}
-
-.chakra-menu__menuitem[aria-selected="true"],
-.chakra-menu__menuitem:active,
-.chakra-menu__menuitem:focus {
-  background-color: transparent !important;
-  color: #000000 !important;
-}
-
-.chakra-menu__menuitem-option,
-.chakra-menu__command {
-  color: #000000 !important;
-}
-
-.chakra-menu__group__title {
-  color: #000000 !important;
-  font-weight: bold !important;
-}
-
-.selected {
-  box-shadow: 0px 0px 0px 2px #CCCCCC, 0px 0px 20px 2px #AAAAAA !important;
-}
-
-.react-flow__node {
-  border-radius: 6px;
-  border-width: 0px;
-}
-
-.react-flow__node:not(.selected):hover {
-  box-shadow: 0 0 0 0.5px #DDDDDD !important;
-}
-
-.react-flow__background {
-  background-color: #000000 !important;
-}
-
-.react-flow__controls {
-  background-color: #222222 !important;
-  border-color: #333333 !important;
-}
-
-.react-flow__controls button {
-  background-color: #222222 !important;
-  color: #EEEEEE !important;
-  border-color: #333333 !important;
-}
-
-/* Enable if you
-want bigger handles:
+/* React Flow specific styles that may need more care to migrate */
 .react-flow__handle {
-  width: 20px;
+  /* width: 20px;
   height: 7px;
-  border-radius: 5px;
-} */
-
-.markdown-wrapper h1,
-.markdown-wrapper h2,
-.markdown-wrapper h3,
-.markdown-wrapper h4,
-.markdown-wrapper h5,
-.markdown-wrapper h6 {
-  font-size: inherit;
-  font-weight: 500;
+  border-radius: 5px; */
 }
 
-.markdown-wrapper blockquote {
-  margin: revert;
+/* Temporary styles to ensure a smooth transition */
+/* These will be gradually migrated to the theme system */
+body {
+  transition: background-color 0.3s ease;
 }
 
-.markdown-wrapper h1 {
-  font-size: 2em;
-}
-
-.markdown-wrapper h2 {
-  font-size: 1.5em;
-}
-
-.markdown-wrapper h3 {
-  font-size: 1.17em;
-}
-
-.markdown-wrapper h4 {
-  font-size: 1em;
-}
-
-.markdown-wrapper h5 {
-  font-size: 0.83em;
-}
-
-.markdown-wrapper h6 {
-  font-size: 0.67em;
-}
-
-.markdown-wrapper hr {
-  background-color: currentColor;
-  height: 2px;
-  border: 0px;
-  border-radius: 6px;
-}
+/* Any component-specific overrides that still need direct CSS */
+/* Eventually all of these should be removed */

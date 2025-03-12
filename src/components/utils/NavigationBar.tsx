@@ -8,19 +8,14 @@ import {
   MenuDivider,
   Box,
   Text,
-  Avatar,
-  AvatarGroup,
   Link,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { ChevronDownIcon } from "@chakra-ui/icons";
 
 import { Row } from "../../utils/chakra";
 import { FluxNodeType } from "../../utils/types";
 import { getPlatformModifierKeyText } from "../../utils/platform";
-
-import dave from "/dave.jpg";
-import t11s from "/t11s.jpg";
-import paradigm from "/paradigm.svg";
 
 export function NavigationBar({
   newUserNodeLinkedToANewSystemNode,
@@ -60,6 +55,7 @@ export function NavigationBar({
   onOpenSettingsModal: () => void;
 }) {
   const modifierKeyText = getPlatformModifierKeyText();
+  const dividerColor = useColorModeValue('ui.medium', 'ui.medium');
 
   return (
     <Row
@@ -79,7 +75,7 @@ export function NavigationBar({
           <b>Forest</b> by <b>YWGI</b>
         </Text>
 
-        <Box mx="20px" height="100%" width="1px" bg="#555555" />
+        <Box mx="20px" height="100%" width="1px" bg={dividerColor} />
 
         <Menu>
           <MenuButton
